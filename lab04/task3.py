@@ -13,6 +13,7 @@ def binary_search(array, target):
             high = mid - 1
     return -1
 array = [23, 56, 70, 88, 90, 99, 12, 34, 9, 5]
+print("Original array:", array)
 array.sort()
 print("Sorted array:", array)
 target = int(input("Enter the number to search: "))
