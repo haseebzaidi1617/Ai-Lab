@@ -1,9 +1,13 @@
-#stack function
+#implementation of stack using list in python
 stack = []
- 
-for i in range(6):
-    stack.append(i)
-    
-     
-print(stack.pop())
+inrange=int(input("Enter the range of stack : "))
+
+for i in range(inrange):
+     x=int(input("Enter the value to push in stack : "))
+     stack.append(x)   
+      
+print(stack)
+print("The top element of the stack is : ",stack[-1])
+print("The popped element is : ",stack.pop())
+print("Top of stack is : ",stack[-1])
      

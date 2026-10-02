@@ -1,9 +1,14 @@
-#queue function
+# implermentation of queue using python
 queue = []
- 
-for i in range(6):
-     queue.append(i)
+
+rng=int(input("Enter value for range : "))
+
+for i in range(rng):
+     y=int(input("Enter the value to push in queue : "))
+     queue.append(y)
     
-     
+print(queue)
+    
 print(queue.pop(0))
-     
+print(queue)
+print(queue.pop(0))     
