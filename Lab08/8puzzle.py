@@ -1,60 +1,120 @@
-# 8-Puzzle using A* (no imports). h = misplaced tiles. Node = [f, g, state, parent, move]
-goal = [1, 2, 3, 4, 5, 6, 7, 8, 0]
-start = [8, 1, 3, 4, 0, 2, 7, 6, 5]   # change this to try other puzzles
-def misplaced(state):
+# Task 3: 8 Puzzle using A* Search
+
+class PuzzleState:
+
+    def __init__(self, board, parent=None, move="", depth=0):
+        self.board = board
+        self.parent = parent
+        self.move = move
+        self.depth = depth
+        self.f = 0
+
+    # Find the empty space (0)
+    def find_zero(self):
+        for i in range(3):
+            for j in range(3):
+                if self.board[i][j] == 0:
+                    return i, j
+
+    # Generate possible next moves
+    def generate_children(self):
+
+        children = []
+        x, y = self.find_zero()
+
+        moves = [
+            (x-1, y, "Up"),
+            (x+1, y, "Down"),
+            (x, y-1, "Left"),
+            (x, y+1, "Right")
+        ]
+
+        for nx, ny, move in moves:
+
+            if 0 <= nx < 3 and 0 <= ny < 3:
+
+                # Copy the board
+                new_board = [row[:] for row in self.board]
+
+                # Swap empty space with the tile
+                new_board[x][y], new_board[nx][ny] = new_board[nx][ny], new_board[x][y]
+
+                children.append(PuzzleState(new_board, self, move, self.depth + 1))
+
+        return children
+
+
+# Count misplaced tiles
+def heuristic(board, goal):
+
     count = 0
-    for i in range(9):
-        if state[i] != 0 and state[i] != goal[i]:
-            count = count + 1
+
+    for i in range(3):
+        for j in range(3):
+            if board[i][j] != 0 and board[i][j] != goal[i][j]:
+                count += 1
+
     return count
-def is_solvable(state):               # solvable only if inversions are even
-    inv = 0
-    for i in range(9):
-        for j in range(i + 1, 9):
-            if state[i] != 0 and state[j] != 0 and state[i] > state[j]:
-                inv = inv + 1
-    return inv % 2 == 0
-def neighbors(state):
-    result = []
-    for b in range(9):                # find the blank
-        if state[b] == 0:
-            break
-    moves = [(-3, "Up", b > 2), (3, "Down", b < 6),
-             (-1, "Left", b % 3 > 0), (1, "Right", b % 3 < 2)]
-    for step, name, allowed in moves:
-        if allowed:
-            new = state[:]
-            new[b] = new[b + step]    # tile slides into the blank
-            new[b + step] = 0
-            result.append([new, name])
-    return result
-def a_star(start):
-    open_list = [[misplaced(start), 0, start, None, ""]]
-    closed = []
+
+
+# A* Search Algorithm
+def a_star_search(start, goal):
+
+    open_list = [PuzzleState(start)]
+    closed_list = []
+
+    open_list[0].f = heuristic(start, goal)
+
     while open_list:
-        best = 0                      # pick node with smallest f
-        for i in range(len(open_list)):
-            if open_list[i][0] < open_list[best][0]:
-                best = i
-        node = open_list.pop(best)
-        if node[2] == goal:
-            return node
-        closed.append(node[2])
-        for new_state, move in neighbors(node[2]):
-            if new_state not in closed:
-                g = node[1] + 1
-                open_list.append([g + misplaced(new_state), g, new_state, node, move])
+
+        # Select state with minimum f value
+        current = min(open_list, key=lambda s: s.f)
+        open_list.remove(current)
+
+        # Check if goal is reached
+        if current.board == goal:
+
+            path = []
+
+            while current.parent:
+                path.append(current.move)
+                current = current.parent
+
+            return path[::-1]
+
+        closed_list.append(current.board)
+
+        # Generate and check child states
+        for child in current.generate_children():
+
+            if child.board not in closed_list:
+
+                child.f = child.depth + heuristic(child.board, goal)
+                open_list.append(child)
+
     return None
-if not is_solvable(start):
-    print("This puzzle cannot be solved.")
+
+
+# Initial State
+start = [
+    [1, 2, 3],
+    [4, 0, 6],
+    [7, 5, 8]
+]
+
+# Goal State
+goal = [
+    [1, 2, 3],
+    [4, 5, 6],
+    [7, 8, 0]
+]
+
+# Run A* Search
+solution = a_star_search(start, goal)
+
+if solution is not None:
+    print("Solution Found!")
+    print("Total Moves:", len(solution))
+    print("Moves:", solution)
 else:
-    node = a_star(start)
-    print("Solved in", node[1], "moves\n")
-    path = []
-    while node is not None:           # walk back through parents
-        path.insert(0, node)
-        node = node[3]
-    for step in range(len(path)):
-        print("Step", step, path[step][4])
-        s = path[step][2]
-        print(s[0], s[1], s[2], "\n" + str(s[3]), s[4], s[5], "\n" + str(s[6]), s[7], s[8], "\n")
+    print("No Solution Found!")
